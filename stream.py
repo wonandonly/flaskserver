@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, send_file
 from time import sleep, time
 import cv2
 
@@ -49,6 +49,11 @@ def Index():
 def Stream():
     # GenerateFrames 함수를 통해 비디오 프레임을 클라이언트에게 실시간으로 반환
     return Response(GenerateFrames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/video')
+def send_video():
+    return send_file("video.mp4", as_attachment=False, mimetype='video/mp4')
+
 
 # Flask 서버를 실행하려는 의도가 있을 경우(외부 import가 아니라 직접 실행한 경우)
 if __name__ == "__main__":
