@@ -58,4 +58,4 @@ def send_video():
 # Flask 서버를 실행하려는 의도가 있을 경우(외부 import가 아니라 직접 실행한 경우)
 if __name__ == "__main__":
     # IP 번호와 포트 번호를 지정하여 Flask 앱을 실행
-    app.run(host="10.117.5.56", port="8080")
+    app.run(host="129.254.184.235", port="8080")
