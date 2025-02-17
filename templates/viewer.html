@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stream Viewer</title>
+</head>
+<body>
+    <h3>Mobile Camera Stream</h3>
+    <img id="video-stream" width="640" height="480">
+    <script>
+        const imgElement = document.getElementById('video-stream');
+        imgElement.src = "http://129.254.184.235:8080/video_feed";
+    </script>
+</body>
+</html>

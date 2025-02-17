@@ -1,9 +1,13 @@
-from flask import Flask, render_template, Response, send_file
+from flask import Flask, render_template, Response, send_file, request
 from time import sleep, time
+import numpy as np
 import cv2
 
 # Flask 애플리케이션 생성 
 app = Flask(__name__)
+
+# 전역 변수로 최신 프레임 저장
+latest_frame = None
 
 # 웹캠으로부터 비디오 캡처 객체 생성
 capture = cv2.VideoCapture(0)  
@@ -31,8 +35,6 @@ def GenerateFrames():
             # 프레임에 fps 텍스트 추가
             cv2.putText(frame, f"FPS:{fps:.2f}", (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
 
-
-
             ref, buffer = cv2.imencode('.jpg', frame)  # JPEG 형식으로 이미지를 인코딩
             frame = buffer.tobytes()  # 인코딩된 이미지를 바이트 스트림으로 변환
             # multipart/x-mixed-replace 포맷으로 비디오 프레임을 클라이언트에게 반환
@@ -42,7 +44,7 @@ def GenerateFrames():
 
 @app.route('/')
 def Index():
-    return render_template('index.html')  # index.html 파일을 렌더링하여 반환
+    return render_template('index.html')  # index.html 파일을 렌더링하여 반환x
 
 
 @app.route('/stream')
@@ -54,6 +56,37 @@ def Stream():
 def send_video():
     return send_file("video.mp4", as_attachment=False, mimetype='video/mp4')
 
+@app.route('/upload', methods=['POST'])
+def upload():
+    global latest_frame
+    file=request.files['frame']
+    npimg=np.frombuffer(file.read(),np.uint8)
+    frame=cv2.imdecode(npimg,cv2.IMREAD_COLOR)
+    return "Frame Received", 200
+
+    #모션 캡처 기능 추가 가능
+    # cv2.imshow("MOBILECAMERA", frame)
+    # cv2.waitkey(1)
+    # return "FRAME RECEIVED",200
+ 
+
+def generate():
+    global latest_frame
+    while True:
+        if latest_frame is not None:
+            _, buffer = cv2.imencode('.jpg', latest_frame)
+            frame_bytes = buffer.tobytes()
+            print("Sending frame...")  # 로그 추가
+
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+        else:
+            print("No frame to send...")  # 프레임 없으면 로그 확인
+            
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
+            
 
 # Flask 서버를 실행하려는 의도가 있을 경우(외부 import가 아니라 직접 실행한 경우)
 if __name__ == "__main__":
